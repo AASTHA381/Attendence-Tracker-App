@@ -485,12 +485,12 @@
 <script>
 /* ── Constants ── */
 const SUBJECTS = [
-  { id: 'product_strategy',      name: 'Product Strategy',      total: 20, maxMiss: 4 },
-  { id: 'consumer_behaviour',    name: 'Consumer Behaviour',    total: 20, maxMiss: 4 },
-  { id: 'market_analytics',      name: 'Market Analytics',      total: 20, maxMiss: 4 },
-  { id: 'ai_for_managers',       name: 'AI for Managers',       total: 20, maxMiss: 4 },
-  { id: 'management_consulting', name: 'Management Consulting', total: 20, maxMiss: 4 },
-  { id: 'business_simulation',   name: 'Business Simulation',   total: 10, maxMiss: 2 },
+  { id: 'product_strategy',      name: 'Product Strategy',      total: 20, maxMiss: 4, sessionsPerWeek: 2 },
+  { id: 'consumer_behaviour',    name: 'Consumer Behaviour',    total: 20, maxMiss: 4, sessionsPerWeek: 2 },
+  { id: 'market_analytics',      name: 'Market Analytics',      total: 20, maxMiss: 4, sessionsPerWeek: 2 },
+  { id: 'ai_for_managers',       name: 'AI for Managers',       total: 20, maxMiss: 4, sessionsPerWeek: 2 },
+  { id: 'management_consulting', name: 'Management Consulting', total: 20, maxMiss: 4, sessionsPerWeek: 2 },
+  { id: 'business_simulation',   name: 'Business Simulation',   total: 10, maxMiss: 2, sessionsPerWeek: 1 },
 ];
 
 /* ── State ── */
@@ -670,9 +670,10 @@ function renderDetail() {
     <div class="sessions-box">
       <div class="sessions-box-header">Session History (${sessions.length} / ${st.TOTAL})</div>`,
 
+  const spw = subject.sessionsPerWeek || 2;
   sessions.forEach((sess, i) => {
-    const week = Math.floor(i / 2) + 1;
-    if (i % 2 === 0) {
+    const week = Math.floor(i / spw) + 1;
+    if (i % spw === 0) {
       html += `<div class="week-divider">Week ${week}</div>`;
     }
     const present   = sess.status === 'present';
