@@ -452,7 +452,7 @@
       <button class="back-btn" onclick="showDashboard()" aria-label="Back">‹</button>
       <div class="header-text">
         <h1 id="detail-title">Subject</h1>
-        <p id="detail-subtitle">0 / 20 attended</p>
+        <p id="detail-subtitle">0 / 20 attended</p> <!-- updated by JS -->
       </div>
     </div>
   </div>
@@ -485,15 +485,13 @@
 <script>
 /* ── Constants ── */
 const SUBJECTS = [
-  { id: 'product_strategy',      name: 'Product Strategy' },
-  { id: 'consumer_behaviour',    name: 'Consumer Behaviour' },
-  { id: 'market_analytics',      name: 'Market Analytics' },
-  { id: 'ai_for_managers',       name: 'AI for Managers' },
-  { id: 'management_consulting', name: 'Management Consulting' },
-  { id: 'business_simulation',   name: 'Business Simulation' },
+  { id: 'product_strategy',      name: 'Product Strategy',      total: 20, maxMiss: 4 },
+  { id: 'consumer_behaviour',    name: 'Consumer Behaviour',    total: 20, maxMiss: 4 },
+  { id: 'market_analytics',      name: 'Market Analytics',      total: 20, maxMiss: 4 },
+  { id: 'ai_for_managers',       name: 'AI for Managers',       total: 20, maxMiss: 4 },
+  { id: 'management_consulting', name: 'Management Consulting', total: 20, maxMiss: 4 },
+  { id: 'business_simulation',   name: 'Business Simulation',   total: 10, maxMiss: 2 },
 ];
-const TOTAL  = 20;
-const MAX_MISS = 4;
 
 /* ── State ── */
 let currentId = null;
@@ -516,6 +514,9 @@ function save() {
 
 /* ── Stats ── */
 function stats(id) {
+  const subject  = SUBJECTS.find(s => s.id === id);
+  const TOTAL    = subject.total;
+  const MAX_MISS = subject.maxMiss;
   const sessions = data.subjects[id]?.sessions ?? [];
   const held     = sessions.length;
   const attended = sessions.filter(s => s.status === 'present').length;
@@ -524,7 +525,7 @@ function stats(id) {
   const canMiss  = MAX_MISS - missed;
   const pct      = held > 0 ? Math.round((attended / held) * 100) : 100;
   const severity = canMiss <= 0 ? 'danger' : canMiss === 1 ? 'warn' : 'safe';
-  return { sessions, held, attended, missed, remaining, canMiss, pct, severity };
+  return { sessions, held, attended, missed, remaining, canMiss, pct, severity, TOTAL, MAX_MISS };
 }
 
 function overallStats() {
@@ -559,7 +560,7 @@ function renderDashboard() {
 
   SUBJECTS.forEach(subject => {
     const st = stats(subject.id);
-    const barW = Math.min(100, (st.missed / MAX_MISS) * 100);
+    const barW = Math.min(100, (st.missed / st.MAX_MISS) * 100);
 
     let badgeText;
     if (st.canMiss <= 0) {
@@ -619,7 +620,7 @@ function renderDetail() {
 
   document.getElementById('detail-title').textContent = subject.name;
   document.getElementById('detail-subtitle').textContent =
-    `${st.attended} / ${TOTAL} sessions attended`;
+    `${st.attended} / ${st.TOTAL} sessions attended`;
 
   /* status card */
   let icon, msg, color;
@@ -634,19 +635,19 @@ function renderDetail() {
     msg  = `You can miss ${st.canMiss} more session${st.canMiss !== 1 ? 's' : ''} safely.`;
   }
 
-  const barFill = Math.min(100, (st.missed / MAX_MISS) * 100);
+  const barFill = Math.min(100, (st.missed / st.MAX_MISS) * 100);
 
   document.getElementById('status-card').innerHTML = `
     <div class="status-icon-big">${icon}</div>
     <div class="status-right">
       <div class="status-msg" style="color:${color}">${msg}</div>
       <div class="status-detail">
-        ${st.missed} / ${MAX_MISS} misses used &nbsp;·&nbsp; ${st.held} / ${TOTAL} sessions held
+        ${st.missed} / ${st.MAX_MISS} misses used &nbsp;·&nbsp; ${st.held} / ${st.TOTAL} sessions held
       </div>
       <div class="mini-bar-wrap">
         <div class="mini-bar" style="width:${barFill}%;background:${color}"></div>
       </div>
-      <div class="mini-bar-caption">${st.missed} of ${MAX_MISS} allowed misses consumed</div>
+      <div class="mini-bar-caption">${st.missed} of ${st.MAX_MISS} allowed misses consumed</div>
     </div>`;
 
   /* sessions list */
@@ -667,7 +668,7 @@ function renderDetail() {
 
   let html = `
     <div class="sessions-box">
-      <div class="sessions-box-header">Session History (${sessions.length} / ${TOTAL})</div>`;
+      <div class="sessions-box-header">Session History (${sessions.length} / ${st.TOTAL})</div>`,
 
   sessions.forEach((sess, i) => {
     const week = Math.floor(i / 2) + 1;
@@ -697,8 +698,9 @@ function renderDetail() {
 /* ── Log session ── */
 function logSession(status) {
   const sessions = data.subjects[currentId].sessions;
-  if (sessions.length >= TOTAL) {
-    showToast('All 20 sessions have been logged!');
+  const subj = SUBJECTS.find(s => s.id === currentId);
+  if (sessions.length >= subj.total) {
+    showToast(`All ${subj.total} sessions have been logged!`);
     return;
   }
 
