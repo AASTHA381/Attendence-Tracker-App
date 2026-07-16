@@ -84,7 +84,7 @@
 
     /* ── Scrollable content ── */
     .content {
-      padding: 16px 16px calc(28px + var(--sab));
+      padding: 16px 16px calc(80px + var(--sab));
       max-width: 520px;
       margin: 0 auto;
     }
@@ -394,7 +394,7 @@
     /* ── Toast ── */
     .toast {
       position: fixed;
-      bottom: calc(24px + var(--sab));
+      bottom: calc(76px + var(--sab));
       left: 50%;
       transform: translateX(-50%) translateY(80px);
       background: rgba(15,23,42,.92);
@@ -411,6 +411,159 @@
       pointer-events: none;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Bottom Nav ── */
+    .nav-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: calc(58px + var(--sab));
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      padding-top: 6px;
+      padding-bottom: var(--sab);
+      z-index: 300;
+    }
+    .nav-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 12px;
+      transition: opacity .15s;
+      color: var(--text-2);
+    }
+    .nav-btn:active { opacity: .7; }
+    .nav-btn .ni { font-size: 22px; line-height: 1; }
+    .nav-btn .nl { font-size: 10px; font-weight: 600; }
+    .nav-btn.active { color: var(--primary); }
+
+    /* ── Timetable ── */
+    #timetable-view { display: none; }
+    .tt-day-card {
+      background: var(--card);
+      border-radius: 18px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+    .tt-today {
+      border: 2px solid var(--primary);
+      box-shadow: 0 2px 12px rgba(79,70,229,.18);
+    }
+    .tt-day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tt-day-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .tt-today .tt-day-name { color: var(--primary); }
+    .tt-add-btn {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .12s;
+    }
+    .tt-add-btn:active { background: var(--border); }
+    .tt-slots { padding: 6px 0; }
+    .tt-slot {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 16px 10px 14px;
+      border-left: 4px solid transparent;
+      margin: 3px 10px;
+      border-radius: 10px;
+      background: var(--bg);
+      cursor: pointer;
+      transition: opacity .12s;
+    }
+    .tt-slot:active { opacity: .75; }
+    .tt-slot-time    { font-size: 11px; font-weight: 600; color: var(--text-2); }
+    .tt-slot-subject { font-size: 14px; font-weight: 700; }
+    .tt-slot-detail  { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+    .tt-no-class {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-2);
+      font-style: italic;
+    }
+
+    /* ── Modal (bottom sheet) ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 400;
+    }
+    .modal-overlay.open { display: block; }
+    .tt-modal {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--card);
+      border-radius: 24px 24px 0 0;
+      padding: 0 0 calc(24px + var(--sab));
+      z-index: 500;
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,0,.67,0);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .tt-modal.open { transform: translateY(0); transition-timing-function: cubic-bezier(.33,1,.68,1); }
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      margin: 12px auto 0;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 700; }
+    .modal-close {
+      background: var(--bg); border: none; color: var(--text-2);
+      width: 30px; height: 30px; border-radius: 50%;
+      font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .4px; }
+    .form-input, .form-select {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--primary); background: #fff; }
+    .modal-actions { display: flex; gap: 10px; padding: 4px 18px 0; }
+    .btn-save   { flex: 1; background: var(--primary); color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-delete { background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 12px; padding: 13px 16px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; display: none; }
   </style>
 </head>
 <body>
@@ -481,6 +634,63 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- ══════════════ TIMETABLE VIEW ══════════════ -->
+<div id="timetable-view">
+  <div class="header">
+    <div class="header-row">
+      <div class="header-text">
+        <h1>📅 Timetable</h1>
+        <p>SVKM NMIMS · MBA Trimester-VI</p>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div id="tt-container"></div>
+  </div>
+</div>
+
+<!-- ══════════════ BOTTOM NAV ══════════════ -->
+<nav class="nav-bar" id="main-nav">
+  <button class="nav-btn active" id="nav-attendance" onclick="switchTab('attendance')">
+    <span class="ni">📊</span><span class="nl">Attendance</span>
+  </button>
+  <button class="nav-btn" id="nav-timetable" onclick="switchTab('timetable')">
+    <span class="ni">📅</span><span class="nl">Timetable</span>
+  </button>
+</nav>
+
+<!-- ══════════════ EDIT MODAL ══════════════ -->
+<div class="modal-overlay" id="tt-modal-overlay" onclick="closeModal()"></div>
+<div class="tt-modal" id="tt-modal">
+  <div class="modal-handle"></div>
+  <div class="modal-header">
+    <h3 id="modal-title">Add Class</h3>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label class="form-label" for="slot-time">Time (e.g. 10:10 - 11:40)</label>
+      <input class="form-input" type="text" id="slot-time" placeholder="10:10 - 11:40" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="slot-subject">Subject</label>
+      <select class="form-select" id="slot-subject"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="slot-room">Room</label>
+      <input class="form-input" type="text" id="slot-room" placeholder="L06, 2nd floor" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="slot-prof">Professor</label>
+      <input class="form-input" type="text" id="slot-prof" placeholder="Prof Name" />
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn-save" onclick="saveSlot()">Save</button>
+    <button class="btn-delete" id="modal-delete-btn" onclick="deleteSlot()">Delete</button>
+  </div>
+</div>
 
 <script>
 /* ── Constants ── */
@@ -786,6 +996,222 @@ SUBJECTS.forEach(s => {
 
 renderDashboard();
 checkBanner();
+
+/* ════════════════════════════════
+   TIMETABLE
+════════════════════════════════ */
+const DAYS     = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+const SUBJECT_COLORS = {
+  'Product Strategy':      '#6366f1',
+  'Consumer Behaviour':    '#3b82f6',
+  'Market Analytics':      '#22c55e',
+  'AI for Managers':       '#64748b',
+  'Management Consulting': '#f59e0b',
+  'Business Simulation':   '#f97316',
+};
+
+const DEFAULT_TT = {
+  Mon: [],
+  Tue: [],
+  Wed: [
+    { id:'w1', time:'10:10 - 11:40', subject:'Business Simulation',   room:'L06, 2nd floor', prof:'Dr Srividya Raghavan' },
+    { id:'w2', time:'11:50 - 1:20',  subject:'Management Consulting', room:'L06, 2nd floor', prof:'Dr Dileep Kumar' },
+  ],
+  Thu: [
+    { id:'t1', time:'8:30 - 10:00',  subject:'AI for Managers',       room:'L06, 2nd floor', prof:'Prof Shweta' },
+    { id:'t2', time:'10:10 - 11:40', subject:'AI for Managers',       room:'L06, 2nd floor', prof:'Prof Shweta' },
+    { id:'t3', time:'11:50 - 1:20',  subject:'Management Consulting', room:'L06, 2nd floor', prof:'Dr Dileep Kumar' },
+  ],
+  Fri: [
+    { id:'f1', time:'10:10 - 11:40', subject:'Market Analytics', room:'L06, 2nd floor', prof:'Prof Neeelima' },
+    { id:'f2', time:'11:50 - 1:20',  subject:'Market Analytics', room:'L06, 2nd floor', prof:'Prof Neeelima' },
+  ],
+  Sat: [
+    { id:'s1', time:'2:00 - 3:30',  subject:'Consumer Behaviour', room:'L6, 2nd floor',  prof:'Prof Murtuza Soofi' },
+    { id:'s2', time:'3:40 - 5:10',  subject:'Consumer Behaviour', room:'L06, 2nd floor', prof:'Prof Murtuza Soofi' },
+  ],
+  Sun: [
+    { id:'su1', time:'10:10 - 11:40', subject:'Product Strategy', room:'L06, 2nd floor', prof:'Prof Krishna' },
+    { id:'su2', time:'11:50 - 1:20',  subject:'Product Strategy', room:'L06, 2nd floor', prof:'Prof Krishna' },
+  ],
+};
+
+function loadTT() {
+  try {
+    const raw = localStorage.getItem('classtrack_tt_v1');
+    if (raw) return JSON.parse(raw);
+  } catch(_) {}
+  return JSON.parse(JSON.stringify(DEFAULT_TT));
+}
+function saveTT() { localStorage.setItem('classtrack_tt_v1', JSON.stringify(ttData)); }
+
+let ttData = loadTT();
+
+function todayDayAbbr() {
+  const d = new Date().getDay(); // 0=Sun,1=Mon...6=Sat
+  const map = [6,0,1,2,3,4,5];  // JS day → DAYS index
+  return DAYS[map[d]];
+}
+
+function renderTimetable() {
+  const container = document.getElementById('tt-container');
+  const today = todayDayAbbr();
+  container.innerHTML = '';
+
+  DAYS.forEach((day, di) => {
+    const slots = ttData[day] || [];
+    const isToday = day === today;
+
+    let slotsHtml = '';
+    if (slots.length === 0) {
+      slotsHtml = '<div class="tt-no-class">No classes scheduled</div>';
+    } else {
+      slots.forEach(slot => {
+        const color = SUBJECT_COLORS[slot.subject] || '#6366f1';
+        slotsHtml += `
+          <div class="tt-slot" style="border-left-color:${color}"
+               onclick="openEditSlot('${day}','${slot.id}')">
+            <div class="tt-slot-time">${slot.time}</div>
+            <div class="tt-slot-subject" style="color:${color}">${slot.subject}</div>
+            <div class="tt-slot-detail">${slot.room}${slot.prof ? ' · ' + slot.prof : ''}</div>
+          </div>`;
+      });
+    }
+
+    const card = document.createElement('div');
+    card.className = 'tt-day-card' + (isToday ? ' tt-today' : '');
+    card.id = 'ttday-' + day;
+    card.innerHTML = `
+      <div class="tt-day-header">
+        <div class="tt-day-name">${isToday ? '📍 ' : ''}${DAY_FULL[di]}</div>
+        <button class="tt-add-btn" onclick="openAddSlot('${day}')">+ Add</button>
+      </div>
+      <div class="tt-slots">${slotsHtml}</div>`;
+    container.appendChild(card);
+  });
+
+  // Scroll today's card into view
+  setTimeout(() => {
+    const el = document.getElementById('ttday-' + today);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 120);
+}
+
+/* ── Populate subject dropdown ── */
+function populateSubjectSelect() {
+  const sel = document.getElementById('slot-subject');
+  sel.innerHTML = '';
+  SUBJECTS.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.name;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+}
+populateSubjectSelect();
+
+/* ── Modal ── */
+let editingDay = null;
+let editingSlotId = null;
+
+function openAddSlot(day) {
+  editingDay = day;
+  editingSlotId = null;
+  document.getElementById('modal-title').textContent = 'Add Class — ' + DAY_FULL[DAYS.indexOf(day)];
+  document.getElementById('slot-time').value = '';
+  document.getElementById('slot-subject').value = SUBJECTS[0].name;
+  document.getElementById('slot-room').value = 'L06, 2nd floor';
+  document.getElementById('slot-prof').value = '';
+  document.getElementById('modal-delete-btn').style.display = 'none';
+  openModal();
+}
+
+function openEditSlot(day, slotId) {
+  editingDay = day;
+  editingSlotId = slotId;
+  const slot = (ttData[day] || []).find(s => s.id === slotId);
+  if (!slot) return;
+  document.getElementById('modal-title').textContent = 'Edit Class — ' + DAY_FULL[DAYS.indexOf(day)];
+  document.getElementById('slot-time').value    = slot.time;
+  document.getElementById('slot-subject').value = slot.subject;
+  document.getElementById('slot-room').value    = slot.room;
+  document.getElementById('slot-prof').value    = slot.prof || '';
+  document.getElementById('modal-delete-btn').style.display = 'block';
+  openModal();
+}
+
+function openModal() {
+  document.getElementById('tt-modal').classList.add('open');
+  document.getElementById('tt-modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('tt-modal').classList.remove('open');
+  document.getElementById('tt-modal-overlay').classList.remove('open');
+  editingDay = null; editingSlotId = null;
+}
+
+function saveSlot() {
+  const time    = document.getElementById('slot-time').value.trim();
+  const subject = document.getElementById('slot-subject').value;
+  const room    = document.getElementById('slot-room').value.trim();
+  const prof    = document.getElementById('slot-prof').value.trim();
+  if (!time) { showToast('Please enter a time'); return; }
+
+  if (!ttData[editingDay]) ttData[editingDay] = [];
+  if (editingSlotId) {
+    const idx = ttData[editingDay].findIndex(s => s.id === editingSlotId);
+    if (idx !== -1) ttData[editingDay][idx] = { id: editingSlotId, time, subject, room, prof };
+  } else {
+    ttData[editingDay].push({ id: editingDay + '_' + Date.now(), time, subject, room, prof });
+  }
+  saveTT();
+  const was = editingSlotId;
+  closeModal();
+  renderTimetable();
+  showToast(was ? 'Class updated!' : 'Class added!');
+}
+
+function deleteSlot() {
+  ttData[editingDay] = (ttData[editingDay] || []).filter(s => s.id !== editingSlotId);
+  saveTT();
+  closeModal();
+  renderTimetable();
+  showToast('Class removed');
+}
+
+/* ── Tab switching ── */
+function switchTab(tab) {
+  const dashView = document.getElementById('dashboard-view');
+  const ttView   = document.getElementById('timetable-view');
+  const nav      = document.getElementById('main-nav');
+
+  if (tab === 'attendance') {
+    dashView.style.display = 'block';
+    ttView.style.display   = 'none';
+    renderDashboard();
+  } else {
+    dashView.style.display = 'none';
+    ttView.style.display   = 'block';
+    renderTimetable();
+  }
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + tab).classList.add('active');
+}
+
+/* Hide nav in detail view */
+const _origShowDetail = showDetail;
+showDetail = function(id) {
+  document.getElementById('main-nav').style.display = 'none';
+  _origShowDetail(id);
+};
+const _origShowDashboard = showDashboard;
+showDashboard = function() {
+  document.getElementById('main-nav').style.display = 'flex';
+  _origShowDashboard();
+};
 </script>
 </body>
 </html>
