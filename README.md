@@ -1,12 +1,12 @@
 # 📚 Attendence Tracker App
 
-A **Progressive Web App (PWA)** built for iPhone to track MBA class attendance across 5 subjects. Never accidentally exceed your miss limit again.
+A **Progressive Web App (PWA)** built for iPhone to track MBA class attendance across the current trimester subjects. Never accidentally exceed your miss limit again.
 
 ## Overview
 
 | Detail | Value |
 |---|---|
-| Subjects | 5 |
+| Subjects | 4 |
 | Sessions per subject | 20 |
 | Max misses allowed | 4 per subject |
 | Sessions per week | 2 per subject |
@@ -14,20 +14,22 @@ A **Progressive Web App (PWA)** built for iPhone to track MBA class attendance a
 
 ## Subjects Tracked
 
-- Product Strategy
-- Consumer Behaviour
-- Market Analytics
-- AI for Managers
-- Management Consulting
+- Digital Marketing (DM)
+- Strategic Brand Management — Division B (SBM_B)
+- Visual Analytics (VA)
+- Games of Strategy (GOS)
 
 ## Features
 
-- **Dashboard** — see all 5 subjects at a glance with colour-coded status
+- **Dashboard** — see all 4 subjects at a glance with colour-coded status
 - **Miss counter** — instantly know how many more sessions you can skip
+- **Remaining classes** — see unlogged classes per subject and across the trimester
 - **Status indicators** — 🟢 Safe (2+ skips left) · 🟡 Warning (1 skip left) · 🔴 Danger (no skips left)
 - **Session logging** — log any session as Present or Absent with a date picker
 - **Weekly grouping** — session history grouped by week (2 sessions per week)
 - **Delete sessions** — remove incorrectly logged sessions
+- **Excel timetable import** — upload an NMIMS `.xlsx` timetable and automatically keep DM, SBM Division B, VA, and GOS
+- **Editable timetable** — imported classes can still be added, edited, or removed
 - **Offline support** — works without internet after first load (service worker)
 - **Installable** — add to iPhone Home Screen for a native app experience
 
@@ -60,8 +62,11 @@ python3 -m http.server 3000
 
 ```
 ├── index.html      # Full single-page app (HTML + CSS + JS)
+├── timetable-import.js # NMIMS Excel timetable parser and subject matcher
 ├── manifest.json   # PWA manifest (name, icons, display mode)
 ├── sw.js           # Service worker for offline caching
+├── vendor/
+│   └── xlsx.full.min.js # Vendored SheetJS parser for offline Excel import
 └── icons/
     ├── icon.svg    # Vector app icon
     ├── icon-192.png
@@ -70,4 +75,4 @@ python3 -m http.server 3000
 
 ## Data Storage
 
-All attendance data is stored locally in the browser's **localStorage** — nothing is sent to any server. Your data stays on your device.
+Attendance, imported timetable, and import metadata are stored locally in the browser's **localStorage** — nothing is sent to any server. Your data stays on your device.

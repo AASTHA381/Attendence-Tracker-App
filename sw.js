@@ -1,9 +1,11 @@
-const CACHE = 'classtrack-v3';
+const CACHE = 'classtrack-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon.svg',
+  './timetable-import.js',
+  './vendor/xlsx.full.min.js',
 ];
 
 /* Install — pre-cache app shell */

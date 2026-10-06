@@ -143,7 +143,7 @@
     }
     .overall-grid {
       display: grid;
-      grid-template-columns: repeat(3,1fr);
+      grid-template-columns: repeat(4,1fr);
       gap: 8px;
       margin-top: 14px;
       border-top: 1px solid rgba(255,255,255,.2);
@@ -448,6 +448,46 @@
 
     /* ── Timetable ── */
     #timetable-view { display: none; }
+    .tt-import-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .tt-import-title { font-size: 15px; font-weight: 700; }
+    .tt-import-copy {
+      color: var(--text-2);
+      font-size: 12px;
+      line-height: 1.45;
+      margin: 4px 0 10px;
+    }
+    .tt-import-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .tt-import-btn:active { background: var(--primary-dark); }
+    .tt-import-status {
+      min-height: 17px;
+      margin-top: 8px;
+      color: var(--text-2);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .tt-import-status.error { color: var(--danger-text); }
+    .tt-import-status.success { color: var(--safe-text); }
     .tt-day-card {
       background: var(--card);
       border-radius: 18px;
@@ -641,11 +681,26 @@
     <div class="header-row">
       <div class="header-text">
         <h1>📅 Timetable</h1>
-        <p>SVKM NMIMS · MBA Trimester-VI</p>
+        <p>SVKM NMIMS · MBA Trimester-V</p>
       </div>
     </div>
   </div>
   <div class="content">
+    <div class="tt-import-card">
+      <div class="tt-import-title">Import weekly timetable</div>
+      <p class="tt-import-copy">
+        Upload the NMIMS Excel timetable. ClassTrack will keep only DM, SBM Division B, VA, and GOS.
+      </p>
+      <label class="tt-import-btn" for="timetable-upload">📄 Choose Excel timetable</label>
+      <input
+        id="timetable-upload"
+        type="file"
+        accept=".xlsx,.xls"
+        hidden
+        onchange="importTimetableFile(event)"
+      />
+      <div class="tt-import-status" id="tt-import-status"></div>
+    </div>
     <div id="tt-container"></div>
   </div>
 </div>
@@ -692,16 +747,13 @@
   </div>
 </div>
 
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="timetable-import.js"></script>
 <script>
 /* ── Constants ── */
-const SUBJECTS = [
-  { id: 'product_strategy',      name: 'Product Strategy',      total: 20, maxMiss: 4, sessionsPerWeek: 2 },
-  { id: 'consumer_behaviour',    name: 'Consumer Behaviour',    total: 20, maxMiss: 4, sessionsPerWeek: 2 },
-  { id: 'market_analytics',      name: 'Market Analytics',      total: 20, maxMiss: 4, sessionsPerWeek: 2 },
-  { id: 'ai_for_managers',       name: 'AI for Managers',       total: 20, maxMiss: 4, sessionsPerWeek: 2 },
-  { id: 'management_consulting', name: 'Management Consulting', total: 20, maxMiss: 4, sessionsPerWeek: 2 },
-  { id: 'business_simulation',   name: 'Business Simulation',   total: 10, maxMiss: 2, sessionsPerWeek: 1 },
-];
+const SUBJECTS = ClassTrackTimetableImport.trackedSubjects.map(
+  ({ patterns, ...subject }) => subject
+);
 
 /* ── State ── */
 let currentId = null;
@@ -739,16 +791,17 @@ function stats(id) {
 }
 
 function overallStats() {
-  let attended = 0, held = 0, missed = 0, canMiss = 0;
+  let attended = 0, held = 0, missed = 0, canMiss = 0, remaining = 0;
   SUBJECTS.forEach(s => {
     const st = stats(s.id);
     attended += st.attended;
     held     += st.held;
     missed   += st.missed;
     canMiss  += Math.max(0, st.canMiss);
+    remaining += st.remaining;
   });
   const pct = held > 0 ? Math.round((attended / held) * 100) : 100;
-  return { attended, held, missed, canMiss, pct };
+  return { attended, held, missed, canMiss, remaining, pct };
 }
 
 /* ── Render Dashboard ── */
@@ -763,6 +816,7 @@ function renderDashboard() {
       <div class="overall-stat"><div class="v">${ov.attended}</div><div class="l">Attended</div></div>
       <div class="overall-stat"><div class="v">${ov.missed}</div><div class="l">Missed</div></div>
       <div class="overall-stat"><div class="v">${ov.canMiss}</div><div class="l">Can Skip</div></div>
+      <div class="overall-stat"><div class="v">${ov.remaining}</div><div class="l">Remaining</div></div>
     </div>`;
 
   const container = document.getElementById('subjects-container');
@@ -798,7 +852,7 @@ function renderDashboard() {
         <div class="cs"><div class="cs-v cs-v-primary">${st.attended}</div><div class="cs-l">Attended</div></div>
         <div class="cs"><div class="cs-v cs-v-${st.severity}">${st.missed}</div><div class="cs-l">Missed</div></div>
         <div class="cs"><div class="cs-v cs-v-${st.severity}">${Math.max(0, st.canMiss)}</div><div class="cs-l">Can Skip</div></div>
-        <div class="cs"><div class="cs-v" style="color:var(--text-2)">${st.remaining}</div><div class="cs-l">Left</div></div>
+        <div class="cs"><div class="cs-v" style="color:var(--text-2)">${st.remaining}</div><div class="cs-l">Remaining</div></div>
       </div>`;
     container.appendChild(card);
   });
@@ -830,7 +884,7 @@ function renderDetail() {
 
   document.getElementById('detail-title').textContent = subject.name;
   document.getElementById('detail-subtitle').textContent =
-    `${st.attended} / ${st.TOTAL} sessions attended`;
+    `${st.attended} attended · ${st.remaining} remaining`;
 
   /* status card */
   let icon, msg, color;
@@ -852,7 +906,7 @@ function renderDetail() {
     <div class="status-right">
       <div class="status-msg" style="color:${color}">${msg}</div>
       <div class="status-detail">
-        ${st.missed} / ${st.MAX_MISS} misses used &nbsp;·&nbsp; ${st.held} / ${st.TOTAL} sessions held
+        ${st.missed} / ${st.MAX_MISS} misses used &nbsp;·&nbsp; ${st.remaining} classes remaining
       </div>
       <div class="mini-bar-wrap">
         <div class="mini-bar" style="width:${barFill}%;background:${color}"></div>
@@ -1004,50 +1058,99 @@ const DAYS     = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 const SUBJECT_COLORS = {
-  'Product Strategy':      '#6366f1',
-  'Consumer Behaviour':    '#3b82f6',
-  'Market Analytics':      '#22c55e',
-  'AI for Managers':       '#64748b',
-  'Management Consulting': '#f59e0b',
-  'Business Simulation':   '#f97316',
+  'Digital Marketing':          '#6366f1',
+  'Strategic Brand Management': '#3b82f6',
+  'Visual Analytics':           '#22c55e',
+  'Games of Strategy':          '#f59e0b',
 };
 
 const DEFAULT_TT = {
-  Mon: [],
-  Tue: [],
+  Mon: [
+    { id:'m1', time:'10:10 am - 11:40 am', subject:'Digital Marketing', room:'LR 06, 2nd floor', prof:'Prof Venugopal' },
+    { id:'m2', time:'11:50 am - 1:20 pm',  subject:'Digital Marketing', room:'LR 06, 2nd floor', prof:'Prof Venugopal' },
+    { id:'m3', time:'03:40 pm - 5:10 pm',  subject:'Games of Strategy', room:'LR06, 2nd floor', prof:'Dr Srividya Raghavan' },
+  ],
+  Tue: [
+    { id:'t1', time:'2:00 pm - 3:30 pm',  subject:'Visual Analytics', room:'L06, 2nd floor', prof:'Dr Kamran' },
+    { id:'t2', time:'03:40 pm - 5:10 pm', subject:'Games of Strategy', room:'LR06, 2nd floor', prof:'Dr Srividya Raghavan' },
+  ],
   Wed: [
-    { id:'w1', time:'10:10 - 11:40', subject:'Business Simulation',   room:'L06, 2nd floor', prof:'Dr Srividya Raghavan' },
-    { id:'w2', time:'11:50 - 1:20',  subject:'Management Consulting', room:'L06, 2nd floor', prof:'Dr Dileep Kumar' },
+    { id:'w1', time:'03:40 pm - 5:10 pm', subject:'Visual Analytics', room:'L06, 2nd floor', prof:'Dr Kamran' },
   ],
-  Thu: [
-    { id:'t1', time:'8:30 - 10:00',  subject:'AI for Managers',       room:'L06, 2nd floor', prof:'Prof Shweta' },
-    { id:'t2', time:'10:10 - 11:40', subject:'AI for Managers',       room:'L06, 2nd floor', prof:'Prof Shweta' },
-    { id:'t3', time:'11:50 - 1:20',  subject:'Management Consulting', room:'L06, 2nd floor', prof:'Dr Dileep Kumar' },
-  ],
-  Fri: [
-    { id:'f1', time:'10:10 - 11:40', subject:'Market Analytics', room:'L06, 2nd floor', prof:'Prof Neeelima' },
-    { id:'f2', time:'11:50 - 1:20',  subject:'Market Analytics', room:'L06, 2nd floor', prof:'Prof Neeelima' },
-  ],
+  Thu: [],
+  Fri: [],
   Sat: [
-    { id:'s1', time:'2:00 - 3:30',  subject:'Consumer Behaviour', room:'L6, 2nd floor',  prof:'Prof Murtuza Soofi' },
-    { id:'s2', time:'3:40 - 5:10',  subject:'Consumer Behaviour', room:'L06, 2nd floor', prof:'Prof Murtuza Soofi' },
+    { id:'s1', time:'2:00 pm - 3:30 pm',  subject:'Strategic Brand Management', room:'L06, 2nd floor', prof:'Prof Murtuza' },
+    { id:'s2', time:'03:40 pm - 5:10 pm', subject:'Strategic Brand Management', room:'L06, 2nd floor', prof:'Prof Murtuza' },
   ],
-  Sun: [
-    { id:'su1', time:'10:10 - 11:40', subject:'Product Strategy', room:'L06, 2nd floor', prof:'Prof Krishna' },
-    { id:'su2', time:'11:50 - 1:20',  subject:'Product Strategy', room:'L06, 2nd floor', prof:'Prof Krishna' },
-  ],
+  Sun: [],
 };
 
 function loadTT() {
   try {
-    const raw = localStorage.getItem('classtrack_tt_v1');
+    const raw = localStorage.getItem('classtrack_tt_v2');
     if (raw) return JSON.parse(raw);
   } catch(_) {}
   return JSON.parse(JSON.stringify(DEFAULT_TT));
 }
-function saveTT() { localStorage.setItem('classtrack_tt_v1', JSON.stringify(ttData)); }
+function saveTT() { localStorage.setItem('classtrack_tt_v2', JSON.stringify(ttData)); }
 
 let ttData = loadTT();
+
+function renderImportStatus() {
+  const status = document.getElementById('tt-import-status');
+  const imported = localStorage.getItem('classtrack_tt_import_v1');
+  if (!status || !imported) return;
+  try {
+    const details = JSON.parse(imported);
+    status.textContent = `Last imported: ${details.fileName} · ${details.slotCount} matching classes`;
+    status.className = 'tt-import-status success';
+  } catch (_) {
+    localStorage.removeItem('classtrack_tt_import_v1');
+  }
+}
+
+async function importTimetableFile(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('tt-import-status');
+  status.textContent = 'Reading timetable…';
+  status.className = 'tt-import-status';
+
+  try {
+    if (!/\.(xlsx|xls)$/i.test(file.name)) {
+      throw new Error('Please choose an Excel .xlsx or .xls file.');
+    }
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    const result = ClassTrackTimetableImport.parseTimetableWorkbook(workbook);
+    ttData = result.timetable;
+    saveTT();
+    localStorage.setItem('classtrack_tt_import_v1', JSON.stringify({
+      fileName: file.name,
+      slotCount: result.slotCount,
+      matchedSubjects: result.matchedSubjects,
+      importedAt: new Date().toISOString(),
+    }));
+    renderTimetable();
+    renderDashboard();
+
+    const missing = SUBJECTS
+      .filter(subject => !result.matchedSubjects.includes(subject.id))
+      .map(subject => subject.shortName);
+    const missingText = missing.length ? ` Missing this week: ${missing.join(', ')}.` : '';
+    status.textContent = `Imported ${result.slotCount} matching classes.${missingText}`;
+    status.className = 'tt-import-status success';
+    showToast('Timetable imported!');
+  } catch (error) {
+    console.error('Timetable import failed:', error);
+    status.textContent = error.message || 'Could not import this timetable.';
+    status.className = 'tt-import-status error';
+    showToast('Timetable import failed');
+  } finally {
+    input.value = '';
+  }
+}
 
 function todayDayAbbr() {
   const d = new Date().getDay(); // 0=Sun,1=Mon...6=Sat
@@ -1196,6 +1299,7 @@ function switchTab(tab) {
     dashView.style.display = 'none';
     ttView.style.display   = 'block';
     renderTimetable();
+    renderImportStatus();
   }
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('nav-' + tab).classList.add('active');

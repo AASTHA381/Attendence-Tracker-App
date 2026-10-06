@@ -1,7 +1,7 @@
 {
   "name": "ClassTrack – MBA Attendance",
   "short_name": "ClassTrack",
-  "description": "Track attendance for your 5 MBA subjects and never exceed the miss limit.",
+  "description": "Import your weekly timetable, track MBA attendance, and never exceed the miss limit.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#4f46e5",

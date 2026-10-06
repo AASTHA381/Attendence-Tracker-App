@@ -107,13 +107,15 @@ Students with no attendance policy — no need.
 | 🔢 **Skip counter** | Live "can skip" number per subject + overall |
 | 🚦 **Status** | 🟢 Safe · 🟡 Warning · 🔴 Danger |
 | 📝 **Session logging** | Present/Absent with date |
+| 🔢 **Remaining classes** | Unlogged classes shown per subject and overall |
 | 🗓️ **Weekly grouping** | History grouped by week |
 | 🗑️ **Delete** | Fix mis-logged sessions |
 | 📅 **Timetable** | Class schedule with room/professor |
+| 📄 **Excel import** | Detect DM, SBM Division B, VA, and GOS from an NMIMS workbook |
 | 📲 **Offline PWA** | Installable, works offline |
 
 ### Out of scope
-- Auto-detect attendance, multi-college rule import, notifications.
+- Auto-detect physical attendance, multi-college timetable formats, notifications.
 
 ---
 
@@ -140,18 +142,21 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Client["Browser PWA (static)"]
-      UI[Single-file HTML/CSS/JS]
+      UI[HTML/CSS/JS + timetable import module]
       CALC[Attendance rule engine]
       LS[(localStorage)]
       SW[Service worker - offline]
+      XLSX[Local Excel parser]
     end
     UI --> CALC --> LS
+    XLSX --> UI
     UI -.offline-first.- SW
 ```
 
 **Key decisions**
 - **Client-only, localStorage** — private, offline, zero backend/cost.
 - **Rule engine encodes the policy** (sessions, max misses, minimum %) so the "skips left" number is always correct.
+- **Vendored Excel parser** — timetable files are processed on-device and filtered to the configured subject aliases.
 
 ---
 
@@ -162,10 +167,10 @@ flowchart LR
 │  📚 ClassTrack                │
 │  Overall: 100%  · Can skip 22 │
 ├──────────────────────────────┤
-│  Product Strategy  ✓ 4 left   │  🟢
+│  Digital Marketing ✓ 4 left   │  🟢
 │  0 attended · 0 missed        │
 │ ──────────────────────────── │
-│  Business Simulation ✓ 2 left │  🟢
+│  Visual Analytics ✓ 4 left    │  🟢
 ├──────────────────────────────┤
 │  📊 Attendance   📅 Timetable │
 └──────────────────────────────┘
@@ -183,6 +188,7 @@ timeline
     Phase 0 — Core : Subjects + rules : Skip budget : Colour status
     Phase 1 — Logging : Present/Absent logging : Weekly history : Delete sessions
     Phase 2 — Schedule : Timetable with room/prof : Offline PWA
+    Phase 3 — Import : NMIMS Excel upload : Subject-code matching : Remaining-class totals
     Next : Reminders before class : Configurable rule sets : Trend charts
 ```
 
@@ -208,9 +214,10 @@ timeline
 ## 13. What I'd do next
 1. **Pre-class reminders** ("you can skip this one"). *(engagement)*
 2. **Configurable rule sets** per college/subject. *(reach)*
-3. **Attendance trend charts**. *(insight)*
+3. **Multi-college timetable templates**. *(reach)*
+4. **Attendance trend charts**. *(insight)*
 
 ---
 
 ## 14. Appendix — Tech
-- Single-file vanilla JS PWA, localStorage, service-worker offline, GitHub Pages.
+- Vanilla JS PWA, localStorage, SheetJS workbook parsing, service-worker offline, GitHub Pages.
