@@ -1,6 +1,9 @@
 const assert = require('assert');
 const XLSX = require('../vendor/xlsx.full.min.js');
-const { parseTimetableWorkbook } = require('../timetable-import.js');
+const {
+  parseTimetableWorkbook,
+  parseWeekDatesFromFilename,
+} = require('../timetable-import.js');
 
 const rows = [
   ['NMIMS weekly timetable'],
@@ -22,5 +25,23 @@ assert.deepEqual(
   result.matchedSubjects.sort(),
   ['digital_marketing', 'games_of_strategy', 'strategic_brand_management', 'visual_analytics']
 );
+
+assert.deepEqual(
+  parseWeekDatesFromFilename('05.10.2026-11.10.2026 (1).xlsx'),
+  {
+    startDate: '2026-10-05',
+    endDate: '2026-10-11',
+    datesByDay: {
+      Mon: '2026-10-05',
+      Tue: '2026-10-06',
+      Wed: '2026-10-07',
+      Thu: '2026-10-08',
+      Fri: '2026-10-09',
+      Sat: '2026-10-10',
+      Sun: '2026-10-11',
+    },
+  }
+);
+assert.equal(parseWeekDatesFromFilename('timetable.xlsx'), null);
 
 console.log('Timetable import tests passed');

@@ -1,4 +1,4 @@
-const CACHE = 'classtrack-v4';
+const CACHE = 'classtrack-v5';
 const ASSETS = [
   './',
   './index.html',

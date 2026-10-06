@@ -590,6 +590,7 @@
     .modal-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-label { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .4px; }
+    .form-help { color: var(--text-2); font-size: 11px; line-height: 1.35; }
     .form-input, .form-select {
       border: 1.5px solid var(--border);
       border-radius: 10px;
@@ -724,6 +725,11 @@
     <button class="modal-close" onclick="closeModal()">✕</button>
   </div>
   <div class="modal-body">
+    <div class="form-group">
+      <label class="form-label" for="slot-date">Class date</label>
+      <input class="form-input" type="date" id="slot-date" />
+      <div class="form-help">Changing the date moves this class to the correct day in the imported week.</div>
+    </div>
     <div class="form-group">
       <label class="form-label" for="slot-time">Time (e.g. 10:10 - 11:40)</label>
       <input class="form-input" type="text" id="slot-time" placeholder="10:10 - 11:40" />
@@ -1064,6 +1070,20 @@ const SUBJECT_COLORS = {
   'Games of Strategy':          '#f59e0b',
 };
 
+const DEFAULT_TT_WEEK = {
+  startDate: '2026-10-05',
+  endDate: '2026-10-11',
+  datesByDay: {
+    Mon: '2026-10-05',
+    Tue: '2026-10-06',
+    Wed: '2026-10-07',
+    Thu: '2026-10-08',
+    Fri: '2026-10-09',
+    Sat: '2026-10-10',
+    Sun: '2026-10-11',
+  },
+};
+
 const DEFAULT_TT = {
   Mon: [
     { id:'m1', time:'10:10 am - 11:40 am', subject:'Digital Marketing', room:'LR 06, 2nd floor', prof:'Prof Venugopal' },
@@ -1095,7 +1115,28 @@ function loadTT() {
 }
 function saveTT() { localStorage.setItem('classtrack_tt_v2', JSON.stringify(ttData)); }
 
+function loadTTWeek() {
+  try {
+    const raw = localStorage.getItem('classtrack_tt_week_v1');
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  return JSON.parse(JSON.stringify(DEFAULT_TT_WEEK));
+}
+function saveTTWeek() {
+  localStorage.setItem('classtrack_tt_week_v1', JSON.stringify(ttWeek));
+}
+
+function applyWeekDates(timetable, week) {
+  Object.entries(timetable).forEach(([day, slots]) => {
+    slots.forEach(slot => {
+      if (!slot.date) slot.date = week.datesByDay[day] || '';
+    });
+  });
+}
+
+let ttWeek = loadTTWeek();
 let ttData = loadTT();
+applyWeekDates(ttData, ttWeek);
 
 function renderImportStatus() {
   const status = document.getElementById('tt-import-status');
@@ -1124,8 +1165,15 @@ async function importTimetableFile(event) {
     }
     const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
     const result = ClassTrackTimetableImport.parseTimetableWorkbook(workbook);
+    const importedWeek = ClassTrackTimetableImport.parseWeekDatesFromFilename(file.name);
+    if (!importedWeek) {
+      throw new Error('The filename must include a week range such as 05.10.2026-11.10.2026.');
+    }
+    ttWeek = importedWeek;
     ttData = result.timetable;
+    applyWeekDates(ttData, ttWeek);
     saveTT();
+    saveTTWeek();
     localStorage.setItem('classtrack_tt_import_v1', JSON.stringify({
       fileName: file.name,
       slotCount: result.slotCount,
@@ -1158,6 +1206,34 @@ function todayDayAbbr() {
   return DAYS[map[d]];
 }
 
+function dayAbbrForDate(dateValue) {
+  if (!dateValue) return null;
+  const date = new Date(`${dateValue}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? null : DAYS[[6,0,1,2,3,4,5][date.getDay()]];
+}
+
+function formatWeekDate(dateValue) {
+  if (!dateValue) return '';
+  const date = new Date(`${dateValue}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function timeToMinutes(value) {
+  const match = String(value).match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3]?.toLowerCase();
+  if (meridiem === 'pm' && hours !== 12) hours += 12;
+  if (meridiem === 'am' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
+function sortDaySlots(day) {
+  ttData[day].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+}
+
 function renderTimetable() {
   const container = document.getElementById('tt-container');
   const today = todayDayAbbr();
@@ -1166,6 +1242,7 @@ function renderTimetable() {
   DAYS.forEach((day, di) => {
     const slots = ttData[day] || [];
     const isToday = day === today;
+    const weekDate = formatWeekDate(ttWeek.datesByDay[day]);
 
     let slotsHtml = '';
     if (slots.length === 0) {
@@ -1178,7 +1255,7 @@ function renderTimetable() {
                onclick="openEditSlot('${day}','${slot.id}')">
             <div class="tt-slot-time">${slot.time}</div>
             <div class="tt-slot-subject" style="color:${color}">${slot.subject}</div>
-            <div class="tt-slot-detail">${slot.room}${slot.prof ? ' · ' + slot.prof : ''}</div>
+            <div class="tt-slot-detail">${slot.room}${slot.prof ? ' · ' + slot.prof : ''}${slot.rescheduled ? ' · ↪ Rescheduled' : ''}</div>
           </div>`;
       });
     }
@@ -1188,7 +1265,7 @@ function renderTimetable() {
     card.id = 'ttday-' + day;
     card.innerHTML = `
       <div class="tt-day-header">
-        <div class="tt-day-name">${isToday ? '📍 ' : ''}${DAY_FULL[di]}</div>
+        <div class="tt-day-name">${isToday ? '📍 ' : ''}${DAY_FULL[di]}${weekDate ? ' · ' + weekDate : ''}</div>
         <button class="tt-add-btn" onclick="openAddSlot('${day}')">+ Add</button>
       </div>
       <div class="tt-slots">${slotsHtml}</div>`;
@@ -1219,10 +1296,18 @@ populateSubjectSelect();
 let editingDay = null;
 let editingSlotId = null;
 
+function configureSlotDate(value) {
+  const input = document.getElementById('slot-date');
+  input.min = ttWeek.startDate || '';
+  input.max = ttWeek.endDate || '';
+  input.value = value || '';
+}
+
 function openAddSlot(day) {
   editingDay = day;
   editingSlotId = null;
   document.getElementById('modal-title').textContent = 'Add Class — ' + DAY_FULL[DAYS.indexOf(day)];
+  configureSlotDate(ttWeek.datesByDay[day]);
   document.getElementById('slot-time').value = '';
   document.getElementById('slot-subject').value = SUBJECTS[0].name;
   document.getElementById('slot-room').value = 'L06, 2nd floor';
@@ -1236,7 +1321,8 @@ function openEditSlot(day, slotId) {
   editingSlotId = slotId;
   const slot = (ttData[day] || []).find(s => s.id === slotId);
   if (!slot) return;
-  document.getElementById('modal-title').textContent = 'Edit Class — ' + DAY_FULL[DAYS.indexOf(day)];
+  document.getElementById('modal-title').textContent = 'Edit / Reschedule Class';
+  configureSlotDate(slot.date || ttWeek.datesByDay[day]);
   document.getElementById('slot-time').value    = slot.time;
   document.getElementById('slot-subject').value = slot.subject;
   document.getElementById('slot-room').value    = slot.room;
@@ -1257,24 +1343,50 @@ function closeModal() {
 }
 
 function saveSlot() {
+  const date    = document.getElementById('slot-date').value;
   const time    = document.getElementById('slot-time').value.trim();
   const subject = document.getElementById('slot-subject').value;
   const room    = document.getElementById('slot-room').value.trim();
   const prof    = document.getElementById('slot-prof').value.trim();
+  if (!date) { showToast('Please choose a class date'); return; }
   if (!time) { showToast('Please enter a time'); return; }
-
-  if (!ttData[editingDay]) ttData[editingDay] = [];
-  if (editingSlotId) {
-    const idx = ttData[editingDay].findIndex(s => s.id === editingSlotId);
-    if (idx !== -1) ttData[editingDay][idx] = { id: editingSlotId, time, subject, room, prof };
-  } else {
-    ttData[editingDay].push({ id: editingDay + '_' + Date.now(), time, subject, room, prof });
+  if ((ttWeek.startDate && date < ttWeek.startDate) || (ttWeek.endDate && date > ttWeek.endDate)) {
+    showToast('Choose a date in the imported week');
+    return;
   }
+
+  const targetDay = dayAbbrForDate(date);
+  if (!targetDay) { showToast('Please choose a valid date'); return; }
+
+  const sourceDay = editingDay;
+  const wasEditing = Boolean(editingSlotId);
+  let slotId = editingSlotId;
+  let wasRescheduled = false;
+  if (!ttData[targetDay]) ttData[targetDay] = [];
+
+  if (editingSlotId) {
+    const existing = (ttData[sourceDay] || []).find(slot => slot.id === editingSlotId);
+    if (!existing) { showToast('Class could not be found'); return; }
+    ttData[sourceDay] = ttData[sourceDay].filter(slot => slot.id !== editingSlotId);
+    wasRescheduled = targetDay !== sourceDay || date !== existing.date;
+    ttData[targetDay].push({
+      id: editingSlotId,
+      date,
+      time,
+      subject,
+      room,
+      prof,
+      rescheduled: existing.rescheduled || wasRescheduled,
+    });
+  } else {
+    slotId = targetDay + '_' + Date.now();
+    ttData[targetDay].push({ id: slotId, date, time, subject, room, prof });
+  }
+  sortDaySlots(targetDay);
   saveTT();
-  const was = editingSlotId;
   closeModal();
   renderTimetable();
-  showToast(was ? 'Class updated!' : 'Class added!');
+  showToast(wasRescheduled ? 'Class rescheduled!' : wasEditing ? 'Class updated!' : 'Class added!');
 }
 
 function deleteSlot() {

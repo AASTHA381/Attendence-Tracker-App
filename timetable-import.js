@@ -55,6 +55,7 @@
     [/^sat/i, 'Sat'],
     [/^sun/i, 'Sun'],
   ];
+  const dayByIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   function normalizeText(value) {
     return String(value ?? '').replace(/\r/g, '').trim();
@@ -93,6 +94,39 @@
       .filter((_, index) => index !== roomIndex)
       .join(' · ');
     return { room, professor };
+  }
+
+  function toDateInputValue(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function parseWeekDatesFromFilename(fileName) {
+    const match = String(fileName || '').match(
+      /(\d{1,2})[.-](\d{1,2})[.-](\d{4})\s*-\s*(\d{1,2})[.-](\d{1,2})[.-](\d{4})/
+    );
+    if (!match) return null;
+
+    const start = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+    const end = new Date(Number(match[6]), Number(match[5]) - 1, Number(match[4]));
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return null;
+
+    const datesByDay = {};
+    const cursor = new Date(start);
+    let days = 0;
+    while (cursor <= end && days < 14) {
+      datesByDay[dayByIndex[cursor.getDay()]] = toDateInputValue(cursor);
+      cursor.setDate(cursor.getDate() + 1);
+      days += 1;
+    }
+
+    return {
+      startDate: toDateInputValue(start),
+      endDate: toDateInputValue(end),
+      datesByDay,
+    };
   }
 
   function parseTimetableWorkbook(workbook) {
@@ -162,5 +196,5 @@
     };
   }
 
-  return { trackedSubjects, parseTimetableWorkbook };
+  return { trackedSubjects, parseTimetableWorkbook, parseWeekDatesFromFilename };
 }));

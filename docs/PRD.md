@@ -112,6 +112,7 @@ Students with no attendance policy — no need.
 | 🗑️ **Delete** | Fix mis-logged sessions |
 | 📅 **Timetable** | Class schedule with room/professor |
 | 📄 **Excel import** | Detect DM, SBM Division B, VA, and GOS from an NMIMS workbook |
+| 🔁 **Reschedule class** | Move one class within the imported week by changing its date, time, or subject |
 | 📲 **Offline PWA** | Installable, works offline |
 
 ### Out of scope
@@ -189,6 +190,7 @@ timeline
     Phase 1 — Logging : Present/Absent logging : Weekly history : Delete sessions
     Phase 2 — Schedule : Timetable with room/prof : Offline PWA
     Phase 3 — Import : NMIMS Excel upload : Subject-code matching : Remaining-class totals
+    Phase 4 — Reschedule : Active-week dates : Automatic remove-and-move workflow
     Next : Reminders before class : Configurable rule sets : Trend charts
 ```
 

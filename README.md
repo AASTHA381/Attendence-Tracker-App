@@ -30,6 +30,7 @@ A **Progressive Web App (PWA)** built for iPhone to track MBA class attendance a
 - **Delete sessions** — remove incorrectly logged sessions
 - **Excel timetable import** — upload an NMIMS `.xlsx` timetable and automatically keep DM, SBM Division B, VA, and GOS
 - **Editable timetable** — imported classes can still be added, edited, or removed
+- **One-week rescheduling** — change an imported class date, time, or subject; the old slot is removed and the class moves to the correct day
 - **Offline support** — works without internet after first load (service worker)
 - **Installable** — add to iPhone Home Screen for a native app experience
 
@@ -46,6 +47,13 @@ https://aastha381.github.io/Attendence-Tracker-App/
 2. Tap the **Share** button (box with arrow)
 3. Tap **"Add to Home Screen"**
 4. The app opens full-screen like a native app
+
+## Reschedule a Class
+
+1. Open the **Timetable** tab.
+2. Tap the class that changed.
+3. Update its date, time, subject, room, or professor.
+4. Tap **Save**. ClassTrack removes the original slot and moves the class to the correct day within the imported week.
 
 ## Run Locally
 
@@ -75,4 +83,4 @@ python3 -m http.server 3000
 
 ## Data Storage
 
-Attendance, imported timetable, and import metadata are stored locally in the browser's **localStorage** — nothing is sent to any server. Your data stays on your device.
+Attendance, imported timetable, active week dates, and import metadata are stored locally in the browser's **localStorage** — nothing is sent to any server. Your data stays on your device.
