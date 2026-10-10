@@ -1167,7 +1167,7 @@ async function importTimetableFile(event) {
     const result = ClassTrackTimetableImport.parseTimetableWorkbook(workbook);
     const importedWeek = ClassTrackTimetableImport.parseWeekDatesFromFilename(file.name);
     if (!importedWeek) {
-      throw new Error('The filename must include a week range such as 05.10.2026-11.10.2026.');
+      throw new Error('Could not detect the week dates. Include a range such as 12.10.2026 to 18.10.2026 in the filename.');
     }
     ttWeek = importedWeek;
     ttData = result.timetable;

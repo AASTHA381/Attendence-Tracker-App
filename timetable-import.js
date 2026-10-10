@@ -105,13 +105,27 @@
 
   function parseWeekDatesFromFilename(fileName) {
     const match = String(fileName || '').match(
-      /(\d{1,2})[.-](\d{1,2})[.-](\d{4})\s*-\s*(\d{1,2})[.-](\d{1,2})[.-](\d{4})/
+      /(\d{1,2})[./-](\d{1,3})[./-](\d{4})\s*(?:-|–|—|to)\s*(\d{1,2})[./-](\d{1,3})[./-](\d{4})/i
     );
     if (!match) return null;
 
-    const start = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
-    const end = new Date(Number(match[6]), Number(match[5]) - 1, Number(match[4]));
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return null;
+    function parseDate(dayText, monthText, yearText) {
+      const day = Number(dayText);
+      const month = Number(monthText);
+      const year = Number(yearText);
+      if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+      const date = new Date(year, month - 1, day);
+      if (
+        date.getFullYear() !== year
+        || date.getMonth() !== month - 1
+        || date.getDate() !== day
+      ) return null;
+      return date;
+    }
+
+    const start = parseDate(match[1], match[2], match[3]);
+    const end = parseDate(match[4], match[5], match[6]);
+    if (!start || !end || end < start) return null;
 
     const datesByDay = {};
     const cursor = new Date(start);

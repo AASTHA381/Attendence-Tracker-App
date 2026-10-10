@@ -42,6 +42,23 @@ assert.deepEqual(
     },
   }
 );
+assert.deepEqual(
+  parseWeekDatesFromFilename('12.010.2026 to 18.10.2026.xlsx'),
+  {
+    startDate: '2026-10-12',
+    endDate: '2026-10-18',
+    datesByDay: {
+      Mon: '2026-10-12',
+      Tue: '2026-10-13',
+      Wed: '2026-10-14',
+      Thu: '2026-10-15',
+      Fri: '2026-10-16',
+      Sat: '2026-10-17',
+      Sun: '2026-10-18',
+    },
+  }
+);
+assert.equal(parseWeekDatesFromFilename('32.10.2026 to 38.10.2026.xlsx'), null);
 assert.equal(parseWeekDatesFromFilename('timetable.xlsx'), null);
 
 console.log('Timetable import tests passed');
