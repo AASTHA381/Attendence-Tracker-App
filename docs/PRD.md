@@ -111,7 +111,7 @@ Students with no attendance policy — no need.
 | 🗓️ **Weekly grouping** | History grouped by week |
 | 🗑️ **Delete** | Fix mis-logged sessions |
 | 📅 **Timetable** | Class schedule with room/professor |
-| 📄 **Excel import** | Detect DM, SBM Division B, VA, and GOS from an NMIMS workbook |
+| 📄 **Excel import** | Select the week-start Monday, then detect DM, SBM Division B, VA, and GOS from any NMIMS workbook filename |
 | 🔁 **Reschedule class** | Move one class within the imported week by changing its date, time, or subject |
 | 📲 **Offline PWA** | Installable, works offline |
 

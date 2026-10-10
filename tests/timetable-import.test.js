@@ -2,7 +2,7 @@ const assert = require('assert');
 const XLSX = require('../vendor/xlsx.full.min.js');
 const {
   parseTimetableWorkbook,
-  parseWeekDatesFromFilename,
+  buildWeekFromStartDate,
 } = require('../timetable-import.js');
 
 const rows = [
@@ -27,7 +27,7 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
-  parseWeekDatesFromFilename('05.10.2026-11.10.2026 (1).xlsx'),
+  buildWeekFromStartDate('2026-10-05'),
   {
     startDate: '2026-10-05',
     endDate: '2026-10-11',
@@ -43,7 +43,7 @@ assert.deepEqual(
   }
 );
 assert.deepEqual(
-  parseWeekDatesFromFilename('12.010.2026 to 18.10.2026.xlsx'),
+  buildWeekFromStartDate('2026-10-12'),
   {
     startDate: '2026-10-12',
     endDate: '2026-10-18',
@@ -58,7 +58,7 @@ assert.deepEqual(
     },
   }
 );
-assert.equal(parseWeekDatesFromFilename('32.10.2026 to 38.10.2026.xlsx'), null);
-assert.equal(parseWeekDatesFromFilename('timetable.xlsx'), null);
+assert.equal(buildWeekFromStartDate('2026-10-13'), null);
+assert.equal(buildWeekFromStartDate('not-a-date'), null);
 
 console.log('Timetable import tests passed');

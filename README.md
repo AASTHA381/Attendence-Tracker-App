@@ -85,5 +85,5 @@ python3 -m http.server 3000
 
 Attendance, imported timetable, active week dates, and import metadata are stored locally in the browser's **localStorage** — nothing is sent to any server. Your data stays on your device.
 
-Timetable filenames may separate the date range with a hyphen or `to`, for example
-`05.10.2026-11.10.2026.xlsx` or `12.10.2026 to 18.10.2026.xlsx`.
+Before importing, choose the Monday when the timetable week starts. The Excel
+filename can be anything; ClassTrack does not read dates from the filename.

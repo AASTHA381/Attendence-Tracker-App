@@ -103,37 +103,27 @@
     return `${year}-${month}-${day}`;
   }
 
-  function parseWeekDatesFromFilename(fileName) {
-    const match = String(fileName || '').match(
-      /(\d{1,2})[./-](\d{1,3})[./-](\d{4})\s*(?:-|–|—|to)\s*(\d{1,2})[./-](\d{1,3})[./-](\d{4})/i
-    );
+  function buildWeekFromStartDate(startDateValue) {
+    const match = String(startDateValue || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) return null;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const start = new Date(year, month - 1, day);
+    if (
+      start.getFullYear() !== year
+      || start.getMonth() !== month - 1
+      || start.getDate() !== day
+      || start.getDay() !== 1
+    ) return null;
 
-    function parseDate(dayText, monthText, yearText) {
-      const day = Number(dayText);
-      const month = Number(monthText);
-      const year = Number(yearText);
-      if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-      const date = new Date(year, month - 1, day);
-      if (
-        date.getFullYear() !== year
-        || date.getMonth() !== month - 1
-        || date.getDate() !== day
-      ) return null;
-      return date;
-    }
-
-    const start = parseDate(match[1], match[2], match[3]);
-    const end = parseDate(match[4], match[5], match[6]);
-    if (!start || !end || end < start) return null;
-
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
     const datesByDay = {};
     const cursor = new Date(start);
-    let days = 0;
-    while (cursor <= end && days < 14) {
+    while (cursor <= end) {
       datesByDay[dayByIndex[cursor.getDay()]] = toDateInputValue(cursor);
       cursor.setDate(cursor.getDate() + 1);
-      days += 1;
     }
 
     return {
@@ -210,5 +200,5 @@
     };
   }
 
-  return { trackedSubjects, parseTimetableWorkbook, parseWeekDatesFromFilename };
+  return { trackedSubjects, parseTimetableWorkbook, buildWeekFromStartDate };
 }));
